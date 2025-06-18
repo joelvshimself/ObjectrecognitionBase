@@ -71,11 +71,11 @@ class ImageClassifier: ObservableObject {
             return
         }
         
-        // Verificar que la imagen no esté vacía
-        guard !image.size.equalTo(.zero) else {
-            print("❌ Imagen está vacía o tiene tamaño cero")
+        // Verificar que la imagen no esté vacía o sea inválida
+        guard image.size.width > 0 && image.size.height > 0 else {
+            print("⚠️ Imagen inválida: tamaño \(image.size)")
             DispatchQueue.main.async {
-                self.errorMessage = "La imagen seleccionada está vacía"
+                self.errorMessage = "La imagen seleccionada es inválida"
                 self.result = "Error: Imagen inválida"
                 self.isAnalyzing = false
             }
@@ -104,7 +104,7 @@ class ImageClassifier: ObservableObject {
         }
         #endif
         
-        // Convertir UIImage a CIImage
+        // Convertir UIImage a CIImage de forma segura
         guard let ciImage = CIImage(image: image) else {
             print("❌ Error al convertir UIImage a CIImage")
             DispatchQueue.main.async {
@@ -119,7 +119,10 @@ class ImageClassifier: ObservableObject {
         
         // Configurar la request de clasificación
         let request = VNCoreMLRequest(model: model) { [weak self] request, error in
-            guard let self = self else { return }
+            guard let self = self else { 
+                print("⚠️ Self es nil en callback")
+                return 
+            }
             
             DispatchQueue.main.async {
                 self.isAnalyzing = false
@@ -131,7 +134,7 @@ class ImageClassifier: ObservableObject {
                     return
                 }
                 
-                // Procesar resultados
+                // Procesar resultados de forma segura
                 guard let results = request.results as? [VNClassificationObservation] else {
                     print("❌ No se obtuvieron resultados de clasificación")
                     self.errorMessage = "No se obtuvieron resultados"
@@ -140,6 +143,14 @@ class ImageClassifier: ObservableObject {
                 }
                 
                 print("📊 Resultados obtenidos: \(results.count) predicciones")
+                
+                // Verificar que hay resultados válidos
+                guard !results.isEmpty else {
+                    print("⚠️ Lista de resultados vacía")
+                    self.errorMessage = "No se encontraron predicciones"
+                    self.result = "Error: Sin predicciones"
+                    return
+                }
                 
                 // Mostrar las 3 predicciones principales
                 let topResults = Array(results.prefix(3))

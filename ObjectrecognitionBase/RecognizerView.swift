@@ -2,61 +2,72 @@ import SwiftUI
 import Vision
 import CoreML
 
+
 struct Recognizer: View {
     var uiImage: UIImage
+
+    // TODO: Agregar un objeto observador para manejar clasificación (modelo CoreML)
     @StateObject var imageClassifier = ImageClassifier()
-    @State private var showRetryLink = false // Controla la visibilidad del link "Probar otra foto"
-    @Environment(\.dismiss) private var dismiss // Para volver atrás
+    
+    
+    @State private var showRetryLink = false
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             VStack {
+                // TODO: Mostrar imagen seleccionada
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFit()
                     .cornerRadius(14)
                     .padding()
 
+                // TODO: Mostrar texto de análisis o resultado según estado
                 if imageClassifier.isAnalyzing {
                     Text("Analizando imagen...")
                         .font(.subheadline)
                         .foregroundColor(.gray)
                         .padding()
                 } else {
+                    // TODO: Mostrar resultado del modelo
                     Text("Resultado: \(imageClassifier.result)")
                         .font(.headline)
                         .padding()
                 }
 
-                // Link para probar otra foto (aparece después de 3 segundos)
+                // TODO: Botón para intentar otra imagen (aparece tras delay)
                 if showRetryLink {
                     Button("Intentar otra foto") {
-                        dismiss() // Regresa a `ContentView`
+                        dismiss() // Regresar a la vista anterior
                     }
                     .font(.headline)
                     .foregroundColor(.blue)
                     .padding()
                 }
+
                 Spacer()
             }
             .padding()
             .navigationTitle("Reconocimiento")
             .onAppear {
-                analyzeImage() // Lanza el análisis automáticamente
+                analyzeImage() // TODO: Llamar análisis al cargar vista
             }
         }
     }
 
+    // TODO: Función que lanza la clasificación y espera antes de mostrar botón
     private func analyzeImage() {
         imageClassifier.classify(image: uiImage)
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             showRetryLink = true
         }
     }
 }
 
+// TODO: Vista previa para desarrollo
 #Preview {
-    // Crear una imagen de ejemplo para el preview
-    let sampleImage = UIImage(systemName: "photo") ?? UIImage()
+    let sampleImage = UIImage(named: "photo") ?? UIImage()
     Recognizer(uiImage: sampleImage)
 }

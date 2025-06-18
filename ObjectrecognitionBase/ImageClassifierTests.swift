@@ -4,6 +4,10 @@
 //
 //  Created by Joel Vargas on 24/02/25.
 //
+//  NOTA: Estas pruebas se pueden ejecutar manualmente llamando a ImageClassifierTests.runTests()
+//  desde el debugger o desde código, pero NO se ejecutan automáticamente al iniciar la app
+//  para evitar crashes y problemas de rendimiento.
+//
 
 import Foundation
 import UIKit
@@ -45,7 +49,7 @@ class ImageClassifierTests {
             
             // Intentar cargar el modelo
             let coreMLModel = try MobileNetV2(configuration: config).model
-            let visionModel = try VNCoreMLModel(for: coreMLModel)
+            _ = try VNCoreMLModel(for: coreMLModel)
             
             print("✅ Test pasado: Modelo cargado exitosamente")
             
@@ -93,6 +97,13 @@ class ImageClassifierTests {
             }
         }
     }
+    
+    // Función para ejecutar pruebas de forma segura
+    static func runTestsSafely() {
+        DispatchQueue.global(qos: .background).async {
+            runTests()
+        }
+    }
 }
 
 // Extensión para facilitar las pruebas
@@ -116,6 +127,13 @@ extension ImageClassifier {
             classify(image: image)
         } else {
             print("❌ No se pudo crear imagen de prueba")
+        }
+    }
+    
+    // Función para ejecutar prueba de imagen de forma segura
+    func testWithSampleImageSafely() {
+        DispatchQueue.global(qos: .background).async {
+            self.testWithSampleImage()
         }
     }
 } 
